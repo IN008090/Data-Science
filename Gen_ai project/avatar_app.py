@@ -1,50 +1,35 @@
 import streamlit as st
 import requests
-from PIL import Image
-import io
-import base64
 
-st.set_page_config(page_title="AI Avatar Generator", page_icon="🧙")
+# Set Streamlit page config
+st.set_page_config(page_title="AI Avatar Generator", page_icon="🧙‍♂️")
 
+# Title
 st.title("🧙‍♂️ AI Avatar Generator")
-st.markdown("Upload a photo and choose a style to generate a fantasy avatar using GenAI!")
 
-uploaded_file = st.file_uploader("📸 Upload your photo", type=["jpg", "jpeg", "png"])
+# Sidebar for API key and instructions
+st.sidebar.title("🔧 Settings")
+api_key = st.sidebar.text_input("🔑 Enter your OpenRouter API Key", type="password")
+st.sidebar.markdown("""
+- Upload your image below (JPG/PNG).
+- Select your style (Anime, Pixar, Cartoon, etc).
+- Click 'Generate Avatar'!
+""")
 
-styles = ["Anime", "Pixar", "Cartoon", "Fantasy", "Cyberpunk"]
-selected_style = st.selectbox("🎨 Choose Avatar Style", styles)
+# Upload image
+uploaded_file = st.file_uploader("📤 Upload your photo", type=["jpg", "jpeg", "png"])
+style = st.selectbox("🎨 Choose avatar style", ["Anime", "Pixar", "Cartoon", "Fantasy"])
 
-if uploaded_file and st.button("Generate Avatar"):
-    st.info("⏳ Generating... This may take a few seconds.")
-
-    # Convert image to base64
-    img = Image.open(uploaded_file)
-    buffered = io.BytesIO()
-    img.save(buffered, format="PNG")
-    img_b64 = base64.b64encode(buffered.getvalue()).decode()
-
-    # Prepare prompt & API call (example uses Pollinations model via HuggingFace/Replicate/OpenRouter)
-    prompt = f"A {selected_style.lower()} style avatar of the person in the uploaded photo"
-
-    # Example call using a fake endpoint (replace this with real GenAI endpoint)
-    api_url = "https://api.openrouter.ai/v1/fake-image-gen"
-    headers = {
-        "Authorization": "Bearer YOUR_API_KEY",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "image": img_b64,
-        "prompt": prompt,
-        "style": selected_style.lower()
-    }
-
-    response = requests.post(api_url, json=payload, headers=headers)
-
-    if response.status_code == 200:
-        result = response.json()
-        avatar_url = result.get("generated_image_url")
-
-        st.success("✨ Avatar Generated!")
-        st.image(avatar_url, caption=f"{selected_style} Avatar", use_column_width=True)
+# Button to trigger generation
+if st.button("🎨 Generate Avatar"):
+    if not uploaded_file:
+        st.warning("Please upload a photo first.")
+    elif not api_key:
+        st.warning("Please enter your OpenRouter API key in the sidebar.")
     else:
-        st.error("❌ Failed to generate avatar. Please check API key or try later.")
+        # Simulated API call (replace with actual API call)
+        with st.spinner("🧠 Generating your avatar..."):
+            # You would call OpenRouter or any GenAI image API here
+            # This is just a placeholder
+            st.success("✅ Avatar generated!")
+            st.image(uploaded_file, caption=f"{style} Avatar (Simulated)", use_column_width=True)
