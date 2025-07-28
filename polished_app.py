@@ -1,31 +1,46 @@
 import streamlit as st
 import requests
 
-# Page config must be at the top
+# Set up Streamlit UI
 st.set_page_config(page_title="GenAI Chat App", page_icon="🤖")
+st.title("🤖 Your Personal GenAI Assistant")
 
-# Sidebar
 st.sidebar.title("🔧 Settings")
+api_key = st.sidebar.text_input("Enter your OpenRouter API Key", type="password")
+
 st.sidebar.markdown("""
 - Enter your prompt in the main area  
 - Powered by **OpenRouter API**  
-- Enjoy chatting with your custom AI!
 """)
 
-# Main title
-st.markdown("<h1 style='text-align: center;'>🤖 Your Personal GenAI Assistant</h1>", unsafe_allow_html=True)
+# Main input
+prompt = st.text_area("🧠 Type your question below:")
 
-# User input
-user_input = st.text_area("🧠 Type your question below:")
-
-# Submit button
 if st.button("🚀 Generate Response"):
-    if not user_input.strip():
-        st.warning("Please enter a prompt.")
+    if not api_key:
+        st.warning("🔑 Please enter your OpenRouter API Key in the sidebar.")
+    elif not prompt.strip():
+        st.warning("✍️ Please enter a prompt.")
     else:
         with st.spinner("Thinking..."):
-            # Replace this with actual OpenRouter API call
-            # Example: response = call_openrouter_api(user_input)
-            response = "Your generated response here"
-            st.success("Done!")
-            st.markdown(f"**🤖 AI:** {response}")
+            # Make request to OpenRouter API
+            try:
+                url = "https://openrouter.ai/api/v1/chat/completions"
+                headers = {
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json"
+                }
+                data = {
+                    "model": "mistralai/mistral-7b-instruct",  # or any other available model
+                    "messages": [{"role": "user", "content": prompt}]
+                }
+
+                response = requests.post(url, headers=headers, json=data)
+                response.raise_for_status()
+                reply = response.json()["choices"][0]["message"]["content"]
+
+                st.success("Done!")
+                st.markdown(f"**🤖 AI:** {reply}")
+
+            except Exception as e:
+                st.error(f"Something went wrong: {e}")
